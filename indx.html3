@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTO ZONE</title>
+    <style>
+        :root { --main: #f5c542; --bg: #0f0f0f; }
+        body { font-family: Tahoma, sans-serif; background: var(--bg); color: white; margin: 0; text-align: center; }
+        header { background: #000; padding: 30px; border-bottom: 3px solid var(--main); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: #1a1a1a; border-radius: 12px; padding: 15px; border: 1px solid #333; }
+        .card img { width: 100%; border-radius: 8px; height: 200px; object-fit: cover; }
+        .price { color: var(--main); font-weight: bold; font-size: 1.3rem; margin: 10px 0; display: block; }
+        .btn { display: block; background: #25d366; color: white; padding: 12px; text-decoration: none; border-radius: 8px; font-weight: bold; }
+        #msg { padding: 50px; color: var(--main); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>AUTO ZONE</h1>
+    <p>تعديل مباشر من الجدول</p>
+</header>
+
+<div id="msg">جاري تحميل المنتجات... تأكد من تفعيل "مشاركة الجدول"</div>
+<div class="grid" id="products"></div>
+
+<script>
+    const sheetId = '1BQSmvcThZKjURQFxJmebzMuR7_FdzR5peoLUAS9c1JQ';
+    // استخدام طريقة الـ CSV لأنها أسرع وأقل مشاكل في الـ Permissions
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+
+    fetch(url)
+        .then(res => res.text())
+        .then(csvText => {
+            const rows = csvText.split('\n').map(row => row.split(','));
+            let html = '';
+            
+            // نبدأ من الصف الثاني (index 1) لتخطي العناوين
+            for (let i = 1; i < rows.length; i++) {
+                const [name, price, img, waKey] = rows[i];
+                if (!name || name.trim() === "") continue;
+
+                html += `
+                    <div class="card">
+                        <img src="${img || 'https://via.placeholder.com/300'}">
+                        <h3>${name}</h3>
+                        <span class="price">${price || 'اسأل عن السعر'}</span>
+                        <a href="https://wa.me/201040326645?text=استفسار عن ${waKey || name}" class="btn">طلب عبر واتساب</a>
+                    </div>
+                `;
+            }
+            document.getElementById('msg').style.display = 'none';
+            document.getElementById('products').innerHTML = html;
+        })
+        .catch(err => {
+            document.getElementById('msg').innerHTML = "❌ فشل التحميل. تأكد من إعدادات المشاركة (Anyone with the link)";
+        });
+</script>
+
+</body>
+</html>
